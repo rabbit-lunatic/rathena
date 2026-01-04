@@ -5965,6 +5965,16 @@ This command is not supported for PACKETVER 20150513 or newer.
 		{,<random option id2 array>, <random option value2 array>, <random option paramter2 array>{,<random option id3 array>, <random option value3 array>, <random option paramter3 array>
 		{,<random option id4 array>, <random option value4 array>, <random option paramter4 array>}}}}}}}}};
 
+*mail2 <destination account id>,"<sender name>","<title>","<body>"{,<zeny>{,<item id array>,<item amount array>{,refine{,bound{,<item card0 array>{,<item card1 array>{,<item card2 array>{,<item card3 array>
+		{,<random option id0 array>, <random option value0 array>, <random option paramter0 array>{,<random option id1 array>, <random option value1 array>, <random option paramter1 array>
+		{,<random option id2 array>, <random option value2 array>, <random option paramter2 array>{,<random option id3 array>, <random option value3 array>, <random option paramter3 array>
+		{,<random option id4 array>, <random option value4 array>, <random option paramter4 array>}}}}}}}}};
+
+*mail2all "<sender name>","<title>","<body>"{,<zeny>{,<item id array>,<item amount array>{,refine{,bound{,<item card0 array>{,<item card1 array>{,<item card2 array>{,<item card3 array>
+		{,<random option id0 array>, <random option value0 array>, <random option paramter0 array>{,<random option id1 array>, <random option value1 array>, <random option paramter1 array>
+		{,<random option id2 array>, <random option value2 array>, <random option paramter2 array>{,<random option id3 array>, <random option value3 array>, <random option paramter3 array>
+		{,<random option id4 array>, <random option value4 array>, <random option paramter4 array>}}}}}}}}};
+
 This command will send mail to the <destination id> which is a character ID.
 A <sender name> can be specified but does not have to be from the direct creator
 of the mail and is limited to NAME_LENGTH (24) characters. Mail <title> is limited

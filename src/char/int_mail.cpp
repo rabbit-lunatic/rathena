@@ -24,19 +24,70 @@ bool mail_loadmessage(int32 mail_id, struct mail_message* msg);
 void mapif_Mail_return( int32 fd, uint32 char_id, int32 mail_id, uint32 account_id_receiver = 0, uint32 account_id_sender = 0 );
 bool mapif_Mail_delete( int32 fd, uint32 char_id, int32 mail_id, uint32 account_id = 0 );
 
+/// Check if a mail belongs to a character (handles both MAIL_INBOX_NORMAL and MAIL_INBOX_ACCOUNT)
+static bool mail_belongs_to_char(uint32 char_id, struct mail_message* msg)
+{
+	if( !msg )
+		return false;
+
+	// For MAIL_INBOX_NORMAL, dest_id is char_id
+	if( msg->type == MAIL_INBOX_NORMAL ){
+		return (msg->dest_id == char_id);
+	}
+
+	// For MAIL_INBOX_ACCOUNT, dest_id is account_id, need to check if char belongs to that account
+	if( msg->type == MAIL_INBOX_ACCOUNT ){
+		char *data;
+		uint32 account_id = 0;
+
+		if( SQL_SUCCESS == Sql_Query(sql_handle, "SELECT `account_id` FROM `%s` WHERE `char_id` = '%u'", schema_config.char_db, char_id) ){
+			if( SQL_SUCCESS == Sql_NextRow(sql_handle) ){
+				Sql_GetData(sql_handle, 0, &data, nullptr);
+				account_id = atoi(data);
+			}
+			Sql_FreeResult(sql_handle);
+		}
+
+		return (account_id > 0 && msg->dest_id == account_id);
+	}
+
+	return false;
+}
+
 int32 mail_fromsql(uint32 char_id, struct mail_data* md)
 {
 	int32 i;
 	char *data;
+	uint32 account_id = 0;
 
 	memset(md, 0, sizeof(struct mail_data));
 	md->amount = 0;
 	md->full = false;
 
+	// Get account_id for this character to load account mails
+	if( SQL_SUCCESS == Sql_Query(sql_handle, "SELECT `account_id` FROM `%s` WHERE `char_id` = '%u'", schema_config.char_db, char_id) ){
+		if( SQL_SUCCESS == Sql_NextRow(sql_handle) ){
+			Sql_GetData(sql_handle, 0, &data, nullptr);
+			account_id = atoi(data);
+		}
+		Sql_FreeResult(sql_handle);
+	}
+
 	// First we prefill the msg ids
-	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `id` FROM `%s` WHERE `dest_id`='%d' AND `status` < 3 ORDER BY `id` LIMIT %d", schema_config.mail_db, char_id, MAIL_MAX_INBOX + 1) ){
-		Sql_ShowDebug(sql_handle);
-		return 0;
+	// Load both normal mails (dest_id = char_id) and account mails (dest_id = account_id AND type = MAIL_INBOX_ACCOUNT)
+	if( account_id > 0 ){
+		if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `id` FROM `%s` WHERE ((`dest_id`='%d' AND `type`='%d') OR (`dest_id`='%d' AND `type`='%d')) AND `status` < 3 ORDER BY `id` LIMIT %d", 
+			schema_config.mail_db, char_id, MAIL_INBOX_NORMAL, account_id, MAIL_INBOX_ACCOUNT, MAIL_MAX_INBOX + 1) ){
+			Sql_ShowDebug(sql_handle);
+			return 0;
+		}
+	}else{
+		// Fallback to normal mail only if account_id not found
+		if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `id` FROM `%s` WHERE `dest_id`='%d' AND `type`='%d' AND `status` < 3 ORDER BY `id` LIMIT %d", 
+			schema_config.mail_db, char_id, MAIL_INBOX_NORMAL, MAIL_MAX_INBOX + 1) ){
+			Sql_ShowDebug(sql_handle);
+			return 0;
+		}
 	}
 
 	md->full = (Sql_NumRows(sql_handle) > MAIL_MAX_INBOX);
@@ -374,7 +425,7 @@ void mapif_Mail_getattach(int32 fd, uint32 char_id, int32 mail_id, int32 type)
 	if( !mail_loadmessage(mail_id, &msg) )
 		return;
 
-	if( msg.dest_id != char_id )
+	if( !mail_belongs_to_char(char_id, &msg) )
 		return;
 
 	if( charserv_config.mail_retrieve == 0 && msg.status != MAIL_READ )
@@ -493,12 +544,26 @@ void mapif_Mail_new(struct mail_message *msg)
 		return;
 
 	WBUFW(buf,0) = 0x3849;
-	WBUFL(buf,2) = msg->dest_id;
 	WBUFL(buf,6) = msg->id;
 	memcpy(WBUFP(buf,10), msg->send_name, NAME_LENGTH);
 	memcpy(WBUFP(buf,34), msg->title, MAIL_TITLE_LENGTH);
 	WBUFB(buf,74) = msg->type;
-	chmapif_sendall(buf, 75);
+
+	// For MAIL_INBOX_ACCOUNT, dest_id is account_id, need to notify all online characters of that account
+	if( msg->type == MAIL_INBOX_ACCOUNT ){
+		// Find all online characters for this account
+		for( const auto& pair : char_get_onlinedb() ){
+			std::shared_ptr<struct online_char_data> character = pair.second;
+			if( character != nullptr && character->account_id == msg->dest_id && character->server >= 0 ){
+				WBUFL(buf,2) = character->char_id;
+				chmapif_send(map_server[character->server].fd, buf, 75);
+			}
+		}
+	}else{
+		// For MAIL_INBOX_NORMAL, dest_id is char_id
+		WBUFL(buf,2) = msg->dest_id;
+		chmapif_sendall(buf, 75);
+	}
 }
 
 /*==========================================
@@ -511,7 +576,7 @@ void mapif_Mail_return( int32 fd, uint32 char_id, int32 mail_id, uint32 account_
 		return;
 	}
 
-	if( msg.dest_id != char_id ){
+	if( !mail_belongs_to_char(char_id, &msg) ){
 		return;
 	}
 
@@ -607,6 +672,34 @@ void mapif_parse_Mail_send(int32 fd)
 
 	memcpy(&msg, RFIFOP(fd,8), sizeof(struct mail_message));
 
+	// For MAIL_INBOX_ACCOUNT, dest_id is already an account_id, skip character lookup
+	if( msg.type == MAIL_INBOX_ACCOUNT ){
+		// For account mail, dest_id is the account_id, no conversion needed
+		// Optionally fill dest_name with first character name from the account
+		if( msg.dest_id > 0 ){
+			// Try to get first character name from account (optional, can be empty)
+			if( msg.dest_name[0] == '\0' ){
+				if( SQL_SUCCESS == Sql_Query(sql_handle, "SELECT `name` FROM `%s` WHERE `account_id` = '%u' LIMIT 1", schema_config.char_db, msg.dest_id) ){
+					if( SQL_SUCCESS == Sql_NextRow(sql_handle) ){
+						char *data;
+						Sql_GetData(sql_handle, 0, &data, &len);
+						if( data != nullptr )
+							safestrncpy(msg.dest_name, data, NAME_LENGTH);
+					}
+					Sql_FreeResult(sql_handle);
+				}
+			}
+			msg.status = MAIL_NEW;
+			msg.id = mail_savemessage(&msg);
+			if( msg.id > 0 ){
+				mapif_Mail_send(fd, &msg); // notify sender
+				mapif_Mail_new(&msg); // notify recipient
+			}
+		}
+		return;
+	}
+
+	// For MAIL_INBOX_NORMAL, dest_id should be converted to char_id
 	if( msg.dest_id != 0 ){
 		if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `char_id`, `name` FROM `%s` WHERE `char_id` = '%u'", schema_config.char_db, msg.dest_id) ){
 			Sql_ShowDebug(sql_handle);
