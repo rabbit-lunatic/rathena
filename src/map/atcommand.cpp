@@ -4407,9 +4407,14 @@ ACMD_FUNC(reloadscript){
 	}
 
 	flush_fifos();
+
+	script_set_reloading(true);
+	
 	map_reloadnpc(true); // reload config files seeking for npcs
 	script_reload();
 	npc_reload();
+
+	script_set_reloading(false);
 
 	clif_displaymessage(fd, msg_txt(sd,100)); // Scripts have been reloaded.
 

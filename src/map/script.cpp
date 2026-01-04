@@ -76,6 +76,7 @@ uint32 next_id;
 struct eri *st_ers;
 struct eri *stack_ers;
 static map_session_data* dummy_sd;
+static bool script_reloading = false;
 
 static bool script_rid2sd_( struct script_state *st, map_session_data** sd, const char *func );
 
@@ -4901,6 +4902,14 @@ void script_reload(void) {
 	db_clear(st_db);
 
 	mapreg_reload();
+}
+
+void script_set_reloading(bool reloading) {
+	script_reloading = reloading;
+}
+
+bool script_is_reloading(void) {
+	return script_reloading;
 }
 
 //-----------------------------------------------------------------------------
@@ -11251,11 +11260,12 @@ BUILDIN_FUNC(monster)
 	map_session_data* sd;
 	int16 m;
 	int32 i;
+	std::shared_ptr<s_mob_db> mob = nullptr;
 
 	if( script_isstring( st, 6 ) ){
 		const char* name = script_getstr( st, 6 );
 
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( name );
+		mob = mobdb_search_aegisname( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_monster: Attempted to spawn non-existing monster \"%s\"\n", name );
@@ -11270,6 +11280,14 @@ BUILDIN_FUNC(monster)
 			ShowWarning( "buildin_monster: Attempted to spawn non-existing monster class %d\n", class_ );
 			return SCRIPT_CMD_FAILURE;
 		}
+		
+		if( class_ >= 0 ){
+			mob = mob_db.find(class_);
+		}
+	}
+
+	if( script_is_reloading() && mob != nullptr && mob->get_bosstype() != BOSSTYPE_NONE ){
+		return SCRIPT_CMD_SUCCESS;
 	}
 
 	if (script_hasdata(st, 8)) {

@@ -2341,6 +2341,8 @@ void do_final_script(void);
 int32 add_str(const char* p);
 const char* get_str(int32 id);
 void script_reload(void);
+void script_set_reloading(bool reloading);
+bool script_is_reloading(void);
 
 void setd_sub_num( struct script_state* st, map_session_data* sd, const char* varname, int32 elem, int64 value, struct reg_db* ref );
 void setd_sub_str( struct script_state* st, map_session_data* sd, const char* varname, int32 elem, const char* value, struct reg_db* ref );

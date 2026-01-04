@@ -207,6 +207,7 @@ struct npc_data : public block_list {
 		} warp;
 		struct {
 			mob_data *md;
+			int16 mob_id;
 			time_t kill_time;
 			char killer_name[NAME_LENGTH];
 			int32 spawn_timer;

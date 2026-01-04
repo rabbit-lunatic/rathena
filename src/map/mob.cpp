@@ -40,6 +40,7 @@
 #include "pc.hpp"
 #include "pet.hpp"
 #include "quest.hpp"
+#include "script.hpp"
 
 using namespace rathena;
 
@@ -208,6 +209,7 @@ void mvptomb_create(mob_data *md, char *killer, time_t time)
 	nd->subtype = NPCTYPE_TOMB;
 
 	nd->u.tomb.md = md;
+	nd->u.tomb.mob_id = md->mob_id;
 	nd->u.tomb.kill_time = time;
 	nd->u.tomb.spawn_timer = INVALID_TIMER;
 
@@ -237,6 +239,12 @@ void mvptomb_destroy(mob_data *md) {
 	npc_data *nd;
 
 	if ( (nd = map_id2nd(md->tomb_nid)) ) {
+		if( script_is_reloading() && nd->subtype == NPCTYPE_TOMB ){
+			nd->u.tomb.md = nullptr;
+			md->tomb_nid = 0;
+			return;
+		}
+
 		int32 i;
 		struct map_data *mapdata = map_getmapdata(nd->m);
 
@@ -1118,6 +1126,16 @@ int32 mob_spawn (mob_data *md)
 {
 	int32 i=0;
 	t_tick tick = gettick();
+
+	if( md->db == nullptr && md->mob_id > 0 ){
+		md->db = mob_db.find(md->mob_id);
+	}
+	if( script_is_reloading() && md->db != nullptr && md->db->get_bosstype() != BOSSTYPE_NONE ){
+		if( md->spawn == nullptr ){
+			unit_free(md, CLR_OUTSIGHT);
+		}
+		return 2;
+	}
 
 	md->next_thinktime = tick;
 	if (md->prev != nullptr)

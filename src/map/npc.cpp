@@ -2189,7 +2189,16 @@ void run_tomb(map_session_data* sd, npc_data* nd)
 	strftime(time, sizeof(time), "%H:%M", localtime(&nd->u.tomb.kill_time));
 
 	// TODO: Find exact color?
-	snprintf( buffer, sizeof( buffer ), msg_txt( sd, 657 ), nd->u.tomb.md->db->name.c_str() ); // [ ^EE0000%s^000000 ]
+	const char* mob_name = "Unknown";
+	if( nd->u.tomb.md != nullptr && nd->u.tomb.md->db != nullptr ){
+		mob_name = nd->u.tomb.md->db->name.c_str();
+	} else if( nd->u.tomb.mob_id > 0 ){
+		std::shared_ptr<s_mob_db> mob_db_entry = mob_db.find(nd->u.tomb.mob_id);
+		if( mob_db_entry != nullptr ){
+			mob_name = mob_db_entry->name.c_str();
+		}
+	}
+	snprintf( buffer, sizeof( buffer ), msg_txt( sd, 657 ), mob_name ); // [ ^EE0000%s^000000 ]
 	clif_scriptmes( *sd, nd->id, buffer );
 
 	clif_scriptmes( *sd, nd->id, msg_txt( sd, 658 ) ); // Has met its demise
@@ -5199,6 +5208,14 @@ void npc_parse_mob2(struct spawn_data* mob)
 {
 	int32 i;
 
+	if( script_is_reloading() ){
+		std::shared_ptr<s_mob_db> mob_db_entry = mob_db.find(mob->id);
+		if( mob_db_entry != nullptr && mob_db_entry->get_bosstype() != BOSSTYPE_NONE ){
+			mob->active = mob->num;
+			return;
+		}
+	}
+
 	for( i = mob->active; i < mob->num; ++i )
 	{
 		mob_data* md = mob_spawn_dataset(mob);
@@ -6080,8 +6097,13 @@ int32 npc_reload(void) {
 	for( bl = (block_list*)mapit_first(iter); mapit_exists(iter); bl = (block_list*)mapit_next(iter) ) {
 		switch(bl->type) {
 		case BL_NPC:
-			if( bl->id != fake_nd->id )// don't remove fake_nd
-				npc_unload((npc_data *)bl, false);
+			if( bl->id != fake_nd->id ){// don't remove fake_nd
+				npc_data *nd = (npc_data *)bl;
+				if( script_is_reloading() && nd->subtype == NPCTYPE_TOMB ){
+					continue;
+				}
+				npc_unload(nd, false);
+			}
 			break;
 		case BL_MOB:
 			unit_free(bl,CLR_OUTSIGHT);
