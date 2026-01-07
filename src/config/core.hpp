@@ -74,7 +74,7 @@
 #endif
 
 #ifndef MAX_CHAR_BILLING
-	#define MAX_CHAR_BILLING 0 // This must be less than MAX_CHARS
+	#define MAX_CHAR_BILLING 15 // This must be less than MAX_CHARS
 #endif
 
 /// Comment to disable warnings for deprecated script commands

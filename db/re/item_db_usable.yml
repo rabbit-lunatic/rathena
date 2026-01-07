@@ -79317,6 +79317,8 @@ Body:
       NoGuildStorage: true
       NoMail: true
       NoAuction: true
+    Script: |
+      add_char_slot_billing();
   - Id: 103308
     AegisName: Time_Gap_Refine_Hammer
     Name: Time Gap Refine Hammer
@@ -79394,6 +79396,8 @@ Body:
       NoGuildStorage: true
       NoMail: true
       NoAuction: true
+    Script: |
+      add_char_slot_billing();
   - Id: 103334
     AegisName: SVIP_Gift_22thAniv
     Name: SVIP 22nd Anniversary Gift    # !todo check english name

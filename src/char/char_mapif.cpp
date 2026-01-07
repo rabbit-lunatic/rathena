@@ -763,6 +763,8 @@ int32 chmapif_parse_fwlog_changestatus(int32 fd){
 			val1 = RFIFOL(fd, 36);
 		} else if (operation == CHRIF_OP_CHANGECHARSEX)
 			sex = RFIFOB(fd, 32);
+		else if (operation == CHRIF_OP_CHAR_BILLING_SLOT)
+			val1 = RFIFOL(fd, 36); 
 		RFIFOSKIP(fd,44);
 
 		Sql_EscapeStringLen(sql_handle, esc_name, name, strnlen(name, NAME_LENGTH));
@@ -832,6 +834,14 @@ int32 chmapif_parse_fwlog_changestatus(int32 fd){
 					case CHRIF_OP_CHANGECHARSEX: // changecharsex
 						answer = false;
 						chlogif_parse_ackchangecharsex(t_cid, sex);
+						break;
+					case CHRIF_OP_CHAR_BILLING_SLOT: // char billing slot
+						answer = false; // Don't send immediate answer, wait for login-server response
+						WFIFOHEAD(login_fd, 10);
+						WFIFOW(login_fd, 0) = 0x2730;
+						WFIFOL(login_fd, 2) = t_aid;
+						WFIFOL(login_fd, 6) = val1; 
+						WFIFOSET(login_fd, 10);
 						break;
 				} //end switch operation
 			} //login is connected

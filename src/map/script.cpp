@@ -28325,6 +28325,37 @@ BUILDIN_FUNC(permission_add)
 	return SCRIPT_CMD_SUCCESS;
 }
 
+/*==========================================
+ * add_char_slot_billing({<char_id>});
+ * Adds 1 character slot to the player's account (billing slot)
+ * Check if MAX_CHAR_BILLING is exceeded before adding
+ * Return 1 if success, 0 if failed (limit exceeded or error)
+ *------------------------------------------*/
+BUILDIN_FUNC(add_char_slot_billing) {
+	map_session_data *sd;
+
+	if (!script_charid2sd(2, sd)) {
+		script_pushint(st, 0);
+		return SCRIPT_CMD_FAILURE;
+	}
+
+	// Send request to char-server using chrif_req_login_operation
+	extern int32 char_fd;
+	WFIFOHEAD(char_fd, 44);
+	WFIFOW(char_fd, 0) = 0x2b0e;
+	WFIFOL(char_fd, 2) = sd->status.account_id;
+	safestrncpy(WFIFOCP(char_fd, 6), sd->status.name, NAME_LENGTH);
+	WFIFOW(char_fd, 30) = CHRIF_OP_CHAR_BILLING_SLOT;
+	WFIFOL(char_fd, 32) = 0;
+	WFIFOL(char_fd, 36) = 1;
+	WFIFOL(char_fd, 40) = 0;
+	WFIFOSET(char_fd, 44);
+
+	script_pushint(st, 1);
+
+	return SCRIPT_CMD_SUCCESS;
+}
+
 BUILDIN_FUNC(mesitemicon){
 	std::shared_ptr<item_data> data;
 
@@ -29142,6 +29173,8 @@ struct script_function buildin_func[] = {
 	BUILDIN_DEF2(permission_add, "permission_remove", "i?"),
 
 	BUILDIN_DEF( mesitemicon, "v??" ),
+
+	BUILDIN_DEF(add_char_slot_billing, "?"),
 
 #include <custom/script_def.inc>
 

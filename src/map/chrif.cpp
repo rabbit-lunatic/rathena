@@ -927,6 +927,16 @@ static void chrif_ack_login_req(int32 aid, const char* player_name, uint16 type,
 				return;
 			snprintf(action,25,"%s",msg_txt(sd,436)); //VIP
 			break;
+		case CHRIF_OP_CHAR_BILLING_SLOT:
+			// Process billing slot response directly
+			if (answer == 0) {
+				// Success
+				clif_messagecolor(sd, color_table[COLOR_LIGHT_GREEN], msg_txt(sd, 1541), false, SELF);
+			} else {
+				// Failed
+				clif_messagecolor(sd, color_table[COLOR_RED], msg_txt(sd, 1542), false, SELF);
+			}
+			return; // Don't process further - don't show "Login-serv has been asked" message
 		default:
 			snprintf(action,25,"???");
 			break;

@@ -768,6 +768,61 @@ int32 logchrif_parse_accinfo(int32 fd) {
 }
 
 /**
+ * Receiving a request to add billing slot from char-server.
+ * @param fd: fd to parse from (char-serv)
+ * @return 0 not enough info transmitted, 1 success
+ */
+int32 logchrif_parse_add_billing_slot(int32 fd){
+	if( RFIFOREST(fd) < 10 )
+		return 0;
+
+	struct mmo_account acc;
+	AccountDB* accounts = login_get_accounts_db();
+
+	uint32 account_id = RFIFOL(fd, 2);
+	int32 slots_to_add = RFIFOL(fd, 6);
+	RFIFOSKIP(fd, 10);
+
+	// Load account
+	if( !accounts->load_num(accounts, &acc, account_id) ) {
+		ShowNotice("Add billing slot: Error - account %d not found.\n", account_id);
+		return 1;
+	}
+
+	// Get current billing slots
+	uint8 current_billing = 0;
+	if (acc.char_slots > MIN_CHARS) {
+		current_billing = acc.char_slots - MIN_CHARS;
+	}
+
+	// Check if exceeds MAX_CHAR_BILLING
+	int32 success = 1; // 1 = success, 0 = failed
+	if (current_billing + slots_to_add > MAX_CHAR_BILLING) {
+		success = 0; // Failed
+	} else {
+		// Add slots
+		acc.char_slots += slots_to_add;
+
+		// Check if exceeds MAX_CHARS
+		if (acc.char_slots > MAX_CHARS) {
+			acc.char_slots = MAX_CHARS;
+		}
+
+		// Save
+		accounts->save(accounts, &acc, false);
+	}
+
+	// Send response to char-server
+	WFIFOHEAD(fd, 10);
+	WFIFOW(fd, 0) = 0x2732; // Response packet for billing slot
+	WFIFOL(fd, 2) = account_id;
+	WFIFOL(fd, 6) = success; // 1 = success, 0 = failed
+	WFIFOSET(fd, 10);
+
+	return 1;
+}
+
+/**
  * Entry point from char-server to log-server.
  * Function that checks incoming command, then splits it to the correct handler.
  * @param fd: file descriptor to parse, (link to char-serv)
@@ -822,6 +877,7 @@ int32 logchrif_parse(int32 fd){
 			case 0x2739: next = logchrif_parse_pincode_authfail(fd); break;
 #endif
 			case 0x2742: next = logchrif_parse_reqvipdata(fd); break; //Vip sys
+			case 0x2730: next = logchrif_parse_add_billing_slot(fd); break; // char billing slot
 			default:
 				ShowError("logchrif_parse: Unknown packet 0x%x from a char-server! Disconnecting!\n", command);
 				set_eof(fd);

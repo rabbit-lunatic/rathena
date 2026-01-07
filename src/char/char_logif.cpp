@@ -579,6 +579,30 @@ int32 chlogif_parse_accbannotification(int32 fd){
 	return 1;
 }
 
+/**
+ * Parse billing slot response from login-server
+ * @param fd: fd to parse from (login-serv)
+ * @return 0 not enough info transmitted, 1 success
+ */
+int32 chlogif_parse_billing_slot_response(int32 fd) {
+	if (RFIFOREST(fd) < 10)
+		return 0;
+
+	uint32 account_id = RFIFOL(fd, 2);
+	int32 success = RFIFOL(fd, 6);
+	RFIFOSKIP(fd, 10);
+
+	unsigned char buf[34];
+	WBUFW(buf, 0) = 0x2b0f;
+	WBUFL(buf, 2) = account_id;
+	safestrncpy(WBUFCP(buf, 6), "", NAME_LENGTH);
+	WBUFW(buf, 30) = CHRIF_OP_CHAR_BILLING_SLOT;
+	WBUFW(buf, 32) = (success == 1 ? 0 : 1); // 0 = success, 1 = failed
+	chmapif_sendall(buf, 34);
+
+	return 1;
+}
+
 int32 chlogif_parse_askkick(int32 fd){
 	if (RFIFOREST(fd) < 6)
 		return 0;
@@ -789,6 +813,7 @@ int32 chlogif_parse(int32 fd) {
 			case 0x2723: next = chlogif_parse_ackchangesex(fd); break;
 			case 0x2726: next = chlogif_parse_ack_global_accreg(fd); break;
 			case 0x2731: next = chlogif_parse_accbannotification(fd); break;
+			case 0x2732: next = chlogif_parse_billing_slot_response(fd); break;
 			case 0x2734: next = chlogif_parse_askkick(fd); break;
 			case 0x2735: next = chlogif_parse_updip(fd); break;
 			case 0x2743: next = chlogif_parse_vipack(fd); break;

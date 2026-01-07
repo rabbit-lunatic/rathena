@@ -35,6 +35,7 @@ int32 chlogif_parse_ackchangesex(int32 fd);
 int32 chlogif_parse_ackchangecharsex(int32 char_id, int32 sex);
 int32 chlogif_parse_ack_global_accreg(int32 fd);
 int32 chlogif_parse_accbannotification(int32 fd);
+int32 chlogif_parse_billing_slot_response(int32 fd);
 int32 chlogif_parse_askkick(int32 fd);
 int32 chlogif_parse_updip(int32 fd);
 
