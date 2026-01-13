@@ -617,6 +617,13 @@ bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int32 n, const 
 				}
 			}
 #endif
+			// Cash Shop Log [Rabbit]
+			std::shared_ptr<s_cash_item> cash_item = cash_shop_db.findItemInTab( static_cast<e_cash_shop_tab>( item_list[i].tab ), nameid );
+			if( cash_item != nullptr ){
+				if( SQL_ERROR == Sql_Query( logmysql_handle, "INSERT INTO `cashshoplog` (`id`, `nameid`, `qnt`,  `price`, `account_id`, `char_id`, `map`, `date`) VALUES (NULL, '%d', '%d', '%d', '%d', '%d', '%s',NOW());", nameid, get_amt, cash_item->price, sd->status.account_id, sd->status.char_id, mapindex_id2name(sd->mapindex)) ){
+					Sql_ShowDebug(logmysql_handle);
+				}
+			}
 		}
 	}
 
