@@ -5571,113 +5571,6 @@ static int32 battle_calc_attack_skill_ratio(struct Damage* wd, block_list *src,b
 			if (sc && sc->getSCE(SC_LIGHTOFSTAR))
 				skillratio += skillratio * sc->getSCE(SC_LIGHTOFSTAR)->val2 / 100;
 			break;
-		case IQ_OLEUM_SANCTUM:
-			skillratio += -100 + 500 + 2000 * skill_lv + 5 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_MASSIVE_F_BLASTER:
-			skillratio += -100 + 2300 * skill_lv + 15 * sstatus->pow;
-			if (tstatus->race == RC_BRUTE || tstatus->race == RC_DEMON)
-				skillratio += 150 * skill_lv;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_EXPOSION_BLASTER:
-			skillratio += -100 + 450 + 2600 * skill_lv;
-			skillratio += 10 * sstatus->pow;
-
-			if( tsc != nullptr && tsc->getSCE( SC_HOLY_OIL ) ){
-				skillratio += 950 * skill_lv;
-			}
-
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_FIRST_BRAND:
-			skillratio += -100 + 1200 * skill_lv + 5 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_SECOND_FLAME:
-			skillratio += -100 + 200 + 2900 * skill_lv + 9 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_SECOND_FAITH:
-			skillratio += -100 + 100 + 2300 * skill_lv + 5 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_SECOND_JUDGEMENT:
-			skillratio += -100 + 150 + 2600 * skill_lv + 7 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_THIRD_PUNISH:
-			skillratio += -100 + 450 + 1800 * skill_lv;
-			skillratio += 10 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_THIRD_FLAME_BOMB:
-			skillratio += -100 + 650 * skill_lv + 10 * sstatus->pow;
-			skillratio += sstatus->max_hp * 20 / 100;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_THIRD_CONSECRATION:
-			skillratio += -100 + 700 * skill_lv + 10 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			break;
-		case IQ_BLAZING_FLAME_BLAST:
-			skillratio += -100 + 2000 + 3800 * skill_lv;
-			skillratio += 10 * sstatus->pow;	// !TODO: unknown ratio
-			if( sc != nullptr && sc->hasSCE( SC_MASSIVE_F_BLASTER ) )
-				skillratio += 1500 + 400 * skill_lv;
-			RE_LVL_DMOD(100);
-			break;
-		case IG_GRAND_JUDGEMENT:
-			skillratio += -100 + 250 + 1500 * skill_lv + 10 * sstatus->pow;
-			if (tstatus->race == RC_PLANT || tstatus->race == RC_INSECT)
-				skillratio += 100 + 150 * skill_lv;
-			RE_LVL_DMOD(100);
-			if ((i = pc_checkskill_imperial_guard(sd, 3)) > 0)
-				skillratio += skillratio * i / 100;
-			break;
-		case IG_SHIELD_SHOOTING:
-			skillratio += -100 + 1000 + 3500 * skill_lv;
-			skillratio += 10 * sstatus->pow;
-			skillratio += skill_lv * 150 * pc_checkskill( sd, IG_SHIELD_MASTERY );
-			if (sd) { // Damage affected by the shield's weight and refine. Need official formula. [Rytech]
-				int16 index = sd->equip_index[EQI_HAND_L];
-
-				if (index >= 0 && sd->inventory_data[index] && sd->inventory_data[index]->type == IT_ARMOR) {
-					skillratio += (sd->inventory_data[index]->weight * 7 / 6) / 10;
-					skillratio += sd->inventory.u.items_inventory[index].refine * 100;
-				}
-			}
-			RE_LVL_DMOD(100);
-			break;
-		case IG_OVERSLASH:
-			skillratio += -100 + 220 * skill_lv;
-			skillratio += pc_checkskill(sd, IG_SPEAR_SWORD_M) * 50 * skill_lv;
-			skillratio += 7 * sstatus->pow;
-			RE_LVL_DMOD(100);
-			if ((i = pc_checkskill_imperial_guard(sd, 3)) > 0)
-				skillratio += skillratio * i / 100;
-			break;
-		case IG_RADIANT_SPEAR:
-			skillratio += -100 + 3500 + 1150 * skill_lv;
-			skillratio += pc_checkskill(sd, IG_SPEAR_SWORD_M) * 50;
-			skillratio += 5 * sstatus->pow;	// !TODO: check POW ratio
-
-			if( sc != nullptr && sc->getSCE( SC_SPEAR_SCAR ) )
-				skillratio += 250 * skill_lv;
-
-			RE_LVL_DMOD(100);
-			break;
-		case IG_IMPERIAL_CROSS:
-			skillratio += -100 + 1650 + 1350 * skill_lv;
-			skillratio += pc_checkskill(sd, IG_SPEAR_SWORD_M) * 25;
-			skillratio += 5 * sstatus->pow;	// !TODO: check POW ratio
-
-			if( sc != nullptr && sc->getSCE( SC_SPEAR_SCAR ) )
-				skillratio += 100 + 300 * skill_lv;
-
-			RE_LVL_DMOD(100);
-			break;
 		case ABC_ABYSS_DAGGER:
 			skillratio += -100 + 350 + 1400 * skill_lv;
 			skillratio += 5 * sstatus->pow;
@@ -7945,15 +7838,6 @@ struct Damage battle_calc_magic_attack(block_list *src,block_list *target,uint16
 						RE_LVL_DMOD(100);
 						break;
 #endif
-					case WL_SOULEXPANSION:
-						skillratio += -100 + 1000 + skill_lv * 200;
-						skillratio += sstatus->int_;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_FROSTMISTY:
-						skillratio += -100 + 200 + 100 * skill_lv;
-						RE_LVL_DMOD(100);
-						break;
 					case NPC_JACKFROST:
 						if (tsc && tsc->getSCE(SC_FREEZING)) {
 							skillratio += 900 + 300 * skill_lv;
@@ -7962,54 +7846,6 @@ struct Damage battle_calc_magic_attack(block_list *src,block_list *target,uint16
 							skillratio += 400 + 100 * skill_lv;
 							RE_LVL_DMOD(150);
 						}
-						break;
-					case WL_JACKFROST:
-						if (tsc && tsc->getSCE(SC_MISTY_FROST))
-							skillratio += -100 + 1200 + 600 * skill_lv;
-						else
-							skillratio += -100 + 1000 + 300 * skill_lv;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_DRAINLIFE:
-						skillratio += -100 + 200 * skill_lv + sstatus->int_;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_CRIMSONROCK:
-						skillratio += -100 + 700 + 600 * skill_lv;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_HELLINFERNO:
-						skillratio += -100 + 400 * skill_lv;
-						if (mflag & 2) // ELE_DARK
-							skillratio += 200 * skill_lv;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_COMET:
-						skillratio += -100 + 2500 + 700 * skill_lv;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_CHAINLIGHTNING_ATK:
-						skillratio += 400 + 100 * skill_lv;
-						RE_LVL_DMOD(100);
-						if (mflag > 0)
-							skillratio += 100 * mflag;
-						break;
-					case WL_EARTHSTRAIN:
-						skillratio += -100 + 1000 + 600 * skill_lv;
-						RE_LVL_DMOD(100);
-						break;
-					case WL_TETRAVORTEX_FIRE:
-					case WL_TETRAVORTEX_WATER:
-					case WL_TETRAVORTEX_WIND:
-					case WL_TETRAVORTEX_GROUND:
-						skillratio += -100 + 800 + 400 * skill_lv;
-						break;
-					case WL_SUMMON_ATK_FIRE:
-					case WL_SUMMON_ATK_WATER:
-					case WL_SUMMON_ATK_WIND:
-					case WL_SUMMON_ATK_GROUND:
-						skillratio += 200;
-						RE_LVL_DMOD(100);
 						break;
 					case LG_RAYOFGENESIS:
 						skillratio += -100 + 350 * skill_lv;
@@ -8206,29 +8042,6 @@ struct Damage battle_calc_magic_attack(block_list *src,block_list *target,uint16
 						break;
 					case NPC_STORMGUST2:
 						skillratio += 200 * skill_lv;
-						break;
-					case IG_JUDGEMENT_CROSS:
-						skillratio += -100 + 1950 * skill_lv + 10 * sstatus->spl;
-						if (tstatus->race == RC_PLANT || tstatus->race == RC_INSECT)
-							skillratio += 150 * skill_lv;
-						RE_LVL_DMOD(100);
-						if ((i = pc_checkskill_imperial_guard(sd, 3)) > 0)
-							skillratio += skillratio * i / 100;
-						break;
-					case IG_CROSS_RAIN:
-						if( sc && sc->getSCE( SC_HOLY_S ) ){
-							skillratio += -100 + ( 650 + 15 * pc_checkskill( sd, IG_SPEAR_SWORD_M ) ) * skill_lv;
-						}else{
-							skillratio += -100 + ( 450 + 10 * pc_checkskill( sd, IG_SPEAR_SWORD_M ) ) * skill_lv;
-						}
-						skillratio += 7 * sstatus->spl;
-						RE_LVL_DMOD(100);
-						break;
-					case IG_IMPERIAL_PRESSURE:
-						skillratio += -100 + 5600 + 1850 * skill_lv;
-						skillratio += 7 * sstatus->spl;
-						skillratio += 50 * pc_checkskill( sd, IG_SPEAR_SWORD_M );
-						RE_LVL_DMOD(100);
 						break;
 					case ABC_ABYSS_STRIKE:
 						skillratio += -100 + 2650 * skill_lv;
