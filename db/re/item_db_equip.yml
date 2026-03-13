@@ -96726,9 +96726,13 @@ Body:
     Defense: 2
     Locations:
       Head_Low: true
+    Trade:
+      NoDrop: true
+      NoSell: true
+      NoMail: true
+      NoAuction: true
     ArmorLevel: 1
     EquipLevelMin: 1
-    Refineable: true
     View: 1488
     Script: |
       bonus bMdef,2;
@@ -178425,6 +178429,14 @@ Body:
       NoGuildStorage: true
       NoMail: true
       NoAuction: true
+  - Id: 400918
+    AegisName: aegis_400918
+    Name: Costume White Cat Witch Hat    # !todo check english name
+    Type: Armor
+    Locations:
+      Costume_Head_Top: true
+    ArmorLevel: 1
+    View: 2509
   - Id: 400919
     AegisName: C_Petal_Hood
     Name: Costume Petal Hood
@@ -178433,6 +178445,26 @@ Body:
       Costume_Head_Top: true
     ArmorLevel: 1
     View: 2700
+  - Id: 400920
+    AegisName: C_Chick_Hat_BU
+    Name: Costume Blue Chick Hat
+    Type: Armor
+    Locations:
+      Costume_Head_Top: true
+    Trade:
+      NoDrop: true
+    ArmorLevel: 1
+    View: 2702
+  - Id: 400921
+    AegisName: C_Ear_Of_Puppy_OM
+    Name: Costume Puppy Headband (Brown)    # !todo check english name
+    Type: Armor
+    Locations:
+      Costume_Head_Top: true
+    Trade:
+      NoDrop: true
+    ArmorLevel: 1
+    View: 2703
   - Id: 400930
     AegisName: C_Steamroller
     Name: Costume Wolf Masquerade(White)
@@ -184747,6 +184779,32 @@ Body:
       NoGuildStorage: true
       NoMail: true
       NoAuction: true
+  - Id: 410441
+    AegisName: C_Phantom_Ear
+    Name: Costume Phantom Ears
+    Type: Armor
+    Locations:
+      Costume_Head_Mid: true
+    Trade:
+      NoDrop: true
+      NoSell: true
+      NoMail: true
+      NoAuction: true
+      NoGuildStorage: true
+    ArmorLevel: 1
+    View: 2226
+  - Id: 410442
+    AegisName: C_N_Forest_Cat
+    Name: Costume Norwegian Forest Cat
+    Type: Armor
+    Locations:
+      Costume_Head_Mid: true
+    Trade:
+      NoMail: true
+      NoAuction: true
+      NoGuildStorage: true
+    ArmorLevel: 1
+    View: 2701
   - Id: 410447
     AegisName: C_Handiness_Telescope
     Name: Costume Telescope (Blue)    # !todo check english name
@@ -217279,6 +217337,18 @@ Body:
              bonus2 bSkillAtk,"LG_CANNONSPEAR",70;
          }
       }
+  - Id: 480484
+    AegisName: C_Blue_Magpie
+    Name: Costume Blue Magpie Wings
+    Type: Armor
+    Locations:
+      Costume_Garment: true
+    Trade:
+      NoMail: true
+      NoAuction: true
+      NoGuildStorage: true
+    ArmorLevel: 1
+    View: 237
   - Id: 480486
     AegisName: C_Shiba_Tail
     Name: Costume Shiba Inu Tail
