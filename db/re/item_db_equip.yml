@@ -178328,8 +178328,8 @@ Body:
     ArmorLevel: 1
     View: 2657
   - Id: 400767
-    AegisName: aegis_400767
-    Name: Costume Oriental Wig    # !todo check english name
+    AegisName: C_VIP_Hair_2025
+    Name: Costume Oriental Style Wig
     Type: Armor
     Locations:
       Costume_Head_Low: true
@@ -183203,7 +183203,7 @@ Body:
     ArmorLevel: 1
     View: 2388
   - Id: 410241
-    AegisName: aegis_410241
+    AegisName: C_Cookie_PinkRibbon_V
     Name: Costume Ribbon Sweets Party
     Type: Armor
     Locations:
@@ -188276,11 +188276,15 @@ Body:
     ArmorLevel: 1
     View: 2547
   - Id: 420346
-    AegisName: aegis_420346
+    AegisName: C_Angel_Berry_Wig
     Name: Costume Angel's Raspberry Wig
     Type: Armor
     Locations:
       Costume_Head_Low: true
+    Trade:
+      NoMail: true
+      NoAuction: true
+      NoGuildStorage: true
     ArmorLevel: 1
     View: 2549
   - Id: 420347
@@ -188313,6 +188317,13 @@ Body:
     Type: Armor
     Locations:
       Costume_Head_Low: true
+    Trade:
+      NoDrop: true
+      NoTrade: true
+      NoCart: true
+      NoMail: true
+      NoAuction: true
+      NoGuildStorage: true
     ArmorLevel: 1
     View: 383
     Script: |
@@ -189288,8 +189299,8 @@ Body:
     ArmorLevel: 1
     View: 2716
   - Id: 420702
-    AegisName: aegis_420702
-    Name: Costume Eclipse Scarf    # !todo check english name
+    AegisName: C_Eclipse_Muffler
+    Name: Costume Eclipse Muffler
     Type: Armor
     Locations:
       Costume_Head_Low: true
@@ -217327,7 +217338,7 @@ Body:
     ArmorLevel: 1
     View: 260
   - Id: 480456
-    AegisName: aegis_480456
+    AegisName: C_Plant_Outing_Set
     Name: Costume Houseplant Outing Set
     Type: Armor
     Locations:
